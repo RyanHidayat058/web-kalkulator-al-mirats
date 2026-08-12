@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Al-Mirats - Kalkulator Waris Islam & Faraidh Online</title>
+  <meta name="description" content="Aplikasi Kalkulator Al-Mirats untuk menghitung pembagian harta warisan sesuai hukum Faraidh dan syariat Agama Islam. Dilengkapi 8 modul materi edukasi waris.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <a href="#" class="logo-container" onclick="switchTab('kalkulator'); return false;">
+      <div class="logo-icon">
+        <i class="fas fa-calculator"></i>
+      </div>
+      <div class="logo-text">
+        <span class="logo-title">Al-Mirats</span>
+        <span class="logo-subtitle">Kalkulator Waris Islam & Faraidh</span>
+      </div>
+    </a>
+
+    <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Beralih Tema Terang / Gelap">
+      <i id="theme-icon" class="fas fa-moon"></i>
+    </button>
+  </header>
+
+  <!-- App Main Layout Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="nav-sidebar">
+      <div class="nav-card">
+        <button class="nav-item active" data-tab="kalkulator">
+          <i class="fas fa-calculator"></i>
+          <span>Kalkulator Waris</span>
+        </button>
+        <button class="nav-item" data-tab="materi">
+          <i class="fas fa-book-quran"></i>
+          <span>Materi Edukasi</span>
+        </button>
+        <button class="nav-item" data-tab="tutorial">
+          <i class="fas fa-circle-question"></i>
+          <span>Tutorial</span>
+        </button>
+        <button class="nav-item" data-tab="tentang">
+          <i class="fas fa-info-circle"></i>
+          <span>Tentang Aplikasi</span>
+        </button>
+        <button class="nav-item" data-tab="umpanbalik">
+          <i class="fas fa-comment-dots"></i>
+          <span>Umpan Balik</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Panes -->
+    <main class="main-content">
+      
+      <!-- TAB 1: KALKULATOR WARIS -->
+      <section id="tab-kalkulator" class="tab-pane active">
+        <div class="card">
+          
+          <!-- Wizard Progress Bar -->
+          <div class="wizard-progress">
+            <div class="wizard-progress-track"></div>
+            <div id="wizard-fill" class="wizard-progress-fill"></div>
+            
+            <div id="node-step-1" class="step-node active" onclick="goToStep(1)">
+              1
+              <span class="step-label">Harta & Beban</span>
+            </div>
+            <div id="node-step-2" class="step-node" onclick="goToStep(2)">
+              2
+              <span class="step-label">Jenis Kelamin</span>
+            </div>
+            <div id="node-step-3" class="step-node" onclick="goToStep(3)">
+              3
+              <span class="step-label">Ahli Waris</span>
+            </div>
+            <div id="node-step-4" class="step-node" onclick="goToStep(4)">
+              4
+              <span class="step-label">Hasil Pembagian</span>
+            </div>
+          </div>
+
+          <!-- STEP 1: INPUT HARTA -->
+          <div id="wizard-step-1" class="wizard-step active">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-coins"></i> Langkah 1: Input Harta & Beban Almarhum/ah</h3>
+            </div>
+            
+            <div id="step1-alert" class="alert-banner alert-info" style="display: none;"></div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-harta">Harta Kotor Peninggalan</label>
+              <div class="form-sublabel">Total nilai uang, tanah, tabungan, atau aset legal milik almarhum/ah.</div>
+              <div class="input-container">
+                <span class="input-prefix">Rp</span>
+                <input type="number" id="input-harta" class="form-control" placeholder="0" min="0">
+              </div>
+              <div id="preview-harta" class="currency-preview">Rp 0</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-hutang">Hutang Almarhum/ah (Bila Ada)</label>
+              <div class="form-sublabel">Hutang yang wajib dilunasi terlebih dahulu sebelum pembagian waris.</div>
+              <div class="input-container">
+                <span class="input-prefix">Rp</span>
+                <input type="number" id="input-hutang" class="form-control" placeholder="0" min="0">
+              </div>
+              <div id="preview-hutang" class="currency-preview">Rp 0</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-biayaPerawatanJenazah">Biaya Perawatan Jenazah</label>
+              <div class="form-sublabel">Biaya tajhiz janazah (kain kafan, pemakaman, dll.).</div>
+              <div class="input-container">
+                <span class="input-prefix">Rp</span>
+                <input type="number" id="input-biayaPerawatanJenazah" class="form-control" placeholder="0" min="0">
+              </div>
+              <div id="preview-biayaPerawatanJenazah" class="currency-preview">Rp 0</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-wasiat">Wasiat (Bila Ada)</label>
+              <div class="form-sublabel">Wasiat maksimal 1/3 dari (Harta Kotor - Hutang).</div>
+              <div class="input-container">
+                <span class="input-prefix">Rp</span>
+                <input type="number" id="input-wasiat" class="form-control" placeholder="0" min="0">
+              </div>
+              <div id="preview-wasiat" class="currency-preview">Rp 0</div>
+            </div>
+
+            <div class="wizard-actions">
+              <button class="btn btn-secondary" onclick="resetCalculator()">
+                <i class="fas fa-rotate-left"></i> Reset Input
+              </button>
+              <button id="btn-step1-next" class="btn btn-primary" onclick="goToStep(2)">
+                Lanjut ke Jenis Kelamin <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2: JENIS KELAMIN PEWARIS -->
+          <div id="wizard-step-2" class="wizard-step">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-venus-mars"></i> Langkah 2: Jenis Kelamin Pewaris</h3>
+            </div>
+            <p style="color: var(--text-muted);">Pilih jenis kelamin dari almarhum/ah yang meninggal dunia:</p>
+
+            <div class="gender-selector">
+              <div id="gender-male" class="gender-card selected">
+                <i class="fas fa-mars gender-icon"></i>
+                <div class="gender-title">Laki-Laki</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Pewaris adalah seorang pria</div>
+              </div>
+              <div id="gender-female" class="gender-card">
+                <i class="fas fa-venus gender-icon"></i>
+                <div class="gender-title">Perempuan</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Pewaris adalah seorang wanita</div>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button class="btn btn-secondary" onclick="goToStep(1)">
+                <i class="fas fa-arrow-left"></i> Kembali
+              </button>
+              <button class="btn btn-primary" onclick="goToStep(3)">
+                Lanjut ke Pilih Ahli Waris <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: AHLI WARIS (KELUARGA) -->
+          <div id="wizard-step-3" class="wizard-step">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-users"></i> Langkah 3: Pilih Anggota Keluarga (Ahli Waris)</h3>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Tentukan keberadaan dan jumlah ahli waris utama yang masih hidup:</p>
+
+            <div class="heir-grid">
+              <!-- Ayah -->
+              <div class="heir-card">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-user-tie"></i></div>
+                  <div>
+                    <div class="heir-name">Ayah Kandung</div>
+                    <div class="heir-desc">Orang tua laki-laki</div>
+                  </div>
+                </div>
+                <input type="checkbox" id="cb-ayah" class="checkbox-custom" onchange="toggleCheckbox('adaAyah', this.checked)">
+              </div>
+
+              <!-- Ibu -->
+              <div class="heir-card">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-user-nurse"></i></div>
+                  <div>
+                    <div class="heir-name">Ibu Kandung</div>
+                    <div class="heir-desc">Orang tua perempuan</div>
+                  </div>
+                </div>
+                <input type="checkbox" id="cb-ibu" class="checkbox-custom" onchange="toggleCheckbox('adaIbu', this.checked)">
+              </div>
+
+              <!-- Suami (If Pewaris = Perempuan) -->
+              <div id="heir-row-suami" class="heir-card" style="display: none;">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-ring"></i></div>
+                  <div>
+                    <div class="heir-name">Suami</div>
+                    <div class="heir-desc">Pasangan hidup almarhumah</div>
+                  </div>
+                </div>
+                <input type="checkbox" id="cb-suami" class="checkbox-custom" onchange="toggleCheckbox('adaSuami', this.checked)">
+              </div>
+
+              <!-- Istri (If Pewaris = Laki-Laki) -->
+              <div id="heir-row-istri" class="heir-card">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-heart"></i></div>
+                  <div>
+                    <div class="heir-name">Istri</div>
+                    <div class="heir-desc">Maksimal 4 orang</div>
+                  </div>
+                </div>
+                <div class="counter-group">
+                  <button type="button" class="btn-counter" onclick="updateCounter('istri', -1)">-</button>
+                  <span id="counter-istri" class="counter-value">0</span>
+                  <button type="button" class="btn-counter" onclick="updateCounter('istri', 1)">+</button>
+                </div>
+              </div>
+
+              <!-- Anak Laki-Laki -->
+              <div class="heir-card">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-child-reaching"></i></div>
+                  <div>
+                    <div class="heir-name">Anak Laki-Laki</div>
+                    <div class="heir-desc">Anak kandung pria</div>
+                  </div>
+                </div>
+                <div class="counter-group">
+                  <button type="button" class="btn-counter" onclick="updateCounter('anakLaki', -1)">-</button>
+                  <span id="counter-anakLaki" class="counter-value">0</span>
+                  <button type="button" class="btn-counter" onclick="updateCounter('anakLaki', 1)">+</button>
+                </div>
+              </div>
+
+              <!-- Anak Perempuan -->
+              <div class="heir-card">
+                <div class="heir-info">
+                  <div class="heir-icon"><i class="fas fa-child-dress"></i></div>
+                  <div>
+                    <div class="heir-name">Anak Perempuan</div>
+                    <div class="heir-desc">Anak kandung wanita</div>
+                  </div>
+                </div>
+                <div class="counter-group">
+                  <button type="button" class="btn-counter" onclick="updateCounter('anakPerempuan', -1)">-</button>
+                  <span id="counter-anakPerempuan" class="counter-value">0</span>
+                  <button type="button" class="btn-counter" onclick="updateCounter('anakPerempuan', 1)">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button class="btn btn-secondary" onclick="goToStep(2)">
+                <i class="fas fa-arrow-left"></i> Kembali
+              </button>
+              <button class="btn btn-primary" onclick="goToStep(4)">
+                <i class="fas fa-calculator"></i> Hitung Pembagian Waris
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: HASIL PEMBAGIAN WARIS -->
+          <div id="wizard-step-4" class="wizard-step">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-chart-pie"></i> Langkah 4: Rincian Hasil Pembagian Waris</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" onclick="printCalculationResults()">
+                  <i class="fas fa-print"></i> Cetak / PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- Summary Box -->
+            <div id="results-summary-box" class="summary-box"></div>
+
+            <!-- Case Alert (Radd / Aul) -->
+            <div id="results-case-alert" class="alert-banner" style="display: none;"></div>
+
+            <!-- Breakdown Table -->
+            <div class="table-responsive">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>Ahli Waris</th>
+                    <th>Bagian (Kadar)</th>
+                    <th>Jumlah Orang</th>
+                    <th>Total Hak Harta</th>
+                    <th>Harta Per Orang</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+              </table>
+            </div>
+
+            <div class="wizard-actions">
+              <button class="btn btn-secondary" onclick="goToStep(3)">
+                <i class="fas fa-arrow-left"></i> Edit Ahli Waris
+              </button>
+              <button class="btn btn-primary" onclick="resetCalculator()">
+                <i class="fas fa-rotate-right"></i> Hitung Kasus Baru
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 2: MATERI EDUKASI -->
+      <section id="tab-materi" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-book-quran"></i> Modul Materi Edukasi Faraidh</h3>
+          </div>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Pelajari konsep, rukun, syarat, hukum-hukum Faraidh, serta ayat-ayat Al-Qur'an terkait waris Islam:
+          </p>
+
+          <div id="materi-grid-container" class="materi-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TUTORIAL -->
+      <section id="tab-tutorial" class="tab-pane">
+        <div id="tutorial-container"></div>
+      </section>
+
+      <!-- TAB 4: TENTANG APLIKASI -->
+      <section id="tab-tentang" class="tab-pane">
+        <div id="about-container"></div>
+      </section>
+
+      <!-- TAB 5: UMPAN BALIK -->
+      <section id="tab-umpanbalik" class="tab-pane">
+        <div id="feedback-container"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal for Viewing Full Materi Content -->
+  <div id="materi-modal" class="modal-backdrop" onclick="if(event.target===this) closeMateriModal();">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" style="font-size: 1.2rem; color: var(--primary);">Judul Materi</h3>
+        <button class="btn-close" onclick="closeMateriModal()">&times;</button>
+      </div>
+      <div id="modal-body-content" class="modal-body"></div>
+      <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); text-align: right; background: var(--bg-card);">
+        <button class="btn btn-secondary" onclick="closeMateriModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>&copy; 2026 Al-Mirats Web Calculator. Diproyeksikan dari Aplikasi Android AlmirathKalkulator.</p>
+  </footer>
+
+  <!-- Core JavaScript Files -->
+  <script src="js/calculator.js"></script>
+  <script src="js/materi.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/about.js"></script>
+  <script src="js/feedback.js"></script>
+  <script src="js/pdf.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

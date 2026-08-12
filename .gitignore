@@ -1,0 +1,8 @@
+# Dependencies & OS temporary files
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary cloned android source for migration research
+android_source/
