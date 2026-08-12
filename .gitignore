@@ -1,8 +1,16 @@
-# Dependencies & OS temporary files
-node_modules/
+# Temporary & Local Environment Folders
+android_source/
+.gemini/
+.idea/
+.vscode/
+
+# OS Generated Files
 .DS_Store
 Thumbs.db
-*.log
+desktop.ini
 
-# Temporary cloned android source for migration research
-android_source/
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
