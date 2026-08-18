@@ -1,11 +1,13 @@
 /**
  * ==========================================================================
- * Web Kalkulator Al-Mirats - Feedback Form Module (Direct Email Integration)
- * Directly submits feedback to ryan86877@gmail.com
+ * Web Kalkulator Al-Mirats - Feedback Form Module (Web3Forms API Integration)
+ * Directly submits feedback to ryan86877@gmail.com in the background
+ * Access Key: 478439a5-6823-48ad-afaf-0d75a40be3f9
  * ==========================================================================
  */
 
 let selectedRating = 5;
+const WEB3FORMS_ACCESS_KEY = "478439a5-6823-48ad-afaf-0d75a40be3f9";
 
 function initFeedbackForm() {
   const container = document.getElementById("feedback-container");
@@ -48,7 +50,7 @@ function initFeedbackForm() {
           <textarea id="fb-pesan" name="Pesan_Saran" class="form-control" style="padding-left: 1rem; min-height: 120px; resize: vertical;" placeholder="Tuliskan umpan balik atau kendala yang Anda temui..." required></textarea>
         </div>
 
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
           <button type="submit" id="fb-submit-btn" class="btn btn-primary" style="flex: 1; min-width: 220px;">
             <i class="fas fa-paper-plane"></i> Kirim Umpan Balik
           </button>
@@ -61,8 +63,15 @@ function initFeedbackForm() {
 
       <div id="fb-success-banner" class="alert-banner alert-info" style="display: none; margin-top: 1rem;">
         <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
-        <div>
-          <strong>Berhasil!</strong> Umpan balik Anda telah diproses dan dikirimkan ke <strong>ryan86877@gmail.com</strong>.
+        <div id="fb-success-msg">
+          <strong>Berhasil!</strong> Umpan balik Anda telah dikirim ke <strong>ryan86877@gmail.com</strong>.
+        </div>
+      </div>
+
+      <div id="fb-error-banner" class="alert-banner alert-danger" style="display: none; margin-top: 1rem;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
+        <div id="fb-error-msg">
+          <strong>Gagal mengirim:</strong> Silakan gunakan tombol "Kirim via Aplikasi Gmail".
         </div>
       </div>
     </div>
@@ -82,11 +91,12 @@ function setRating(rating) {
   });
 }
 
-function handleDirectFeedbackSubmit(event) {
+async function handleDirectFeedbackSubmit(event) {
   event.preventDefault();
   const nama = document.getElementById("fb-nama").value;
   const email = document.getElementById("fb-email").value;
   const pesan = document.getElementById("fb-pesan").value;
+  const btn = document.getElementById("fb-submit-btn");
 
   const feedbackObj = {
     nama,
@@ -101,14 +111,69 @@ function handleDirectFeedbackSubmit(event) {
   existing.push(feedbackObj);
   localStorage.setItem("almirats_feedback", JSON.stringify(existing));
 
-  // 2. Direct Mailto Fallback + Notification
-  const banner = document.getElementById("fb-success-banner");
-  if (banner) {
-    banner.style.display = "flex";
+  // 2. Disable Button & Show Loading State
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Mengirim ke ryan86877@gmail.com...`;
   }
 
-  // 3. Trigger mailto directly
-  sendViaMailto();
+  hideBanners();
+
+  // 3. Send to Web3Forms API
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: `[Umpan Balik Al-Mirats Web] Dari ${nama}`,
+        from_name: "Web Kalkulator Al-Mirats",
+        name: nama,
+        email: email,
+        rating: `${selectedRating} / 5 Bintang`,
+        message: pesan,
+        tanggal: new Date().toLocaleString("id-ID")
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showBanner("fb-success-banner");
+      document.getElementById("feedbackForm").reset();
+      setRating(5);
+    } else {
+      console.error("Web3Forms error:", result);
+      showBanner("fb-error-banner");
+    }
+  } catch (err) {
+    console.error("Fetch submit error:", err);
+    showBanner("fb-error-banner");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-paper-plane"></i> Kirim Umpan Balik`;
+    }
+  }
+}
+
+function showBanner(id) {
+  hideBanners();
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = "flex";
+    setTimeout(() => { el.style.display = "none"; }, 7000);
+  }
+}
+
+function hideBanners() {
+  const b1 = document.getElementById("fb-success-banner");
+  const b2 = document.getElementById("fb-error-banner");
+  if (b1) b1.style.display = "none";
+  if (b2) b2.style.display = "none";
 }
 
 function sendViaMailto() {
