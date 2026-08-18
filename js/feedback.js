@@ -1,6 +1,7 @@
 /**
  * ==========================================================================
- * Web Kalkulator Al-Mirats - Feedback Form Module
+ * Web Kalkulator Al-Mirats - Feedback Form Module (Email Integration)
+ * Directly submits feedback to ryan86877@gmail.com
  * ==========================================================================
  */
 
@@ -17,7 +18,7 @@ function initFeedbackForm() {
       </div>
       
       <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-        Kritik, saran, dan masukan Anda sangat berharga untuk pengembangan dan penyempurnaan kalkulator ini.
+        Kritik, saran, dan masukan Anda sangat berharga. Umpan balik akan dikirimkan langsung ke pengembang di <strong>ryan86877@gmail.com</strong>.
       </p>
 
       <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)">
@@ -38,7 +39,7 @@ function initFeedbackForm() {
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="fb-email">Alamat Email</label>
+          <label class="form-label" for="fb-email">Alamat Email Anda</label>
           <input type="email" id="fb-email" class="form-control" style="padding-left: 1rem;" placeholder="nama@email.com" required>
         </div>
 
@@ -47,15 +48,28 @@ function initFeedbackForm() {
           <textarea id="fb-pesan" class="form-control" style="padding-left: 1rem; min-height: 120px; resize: vertical;" placeholder="Tuliskan umpan balik atau kendala yang Anda temui..." required></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%;">
-          <i class="fas fa-paper-plane"></i> Kirim Umpan Balik
-        </button>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <button type="submit" id="fb-submit-btn" class="btn btn-primary" style="flex: 1; min-width: 200px;">
+            <i class="fas fa-paper-plane"></i> Kirim Umpan Balik ke Email
+          </button>
+          
+          <button type="button" class="btn btn-secondary" onclick="sendViaMailto()">
+            <i class="fas fa-envelope"></i> Buka Email Client
+          </button>
+        </div>
       </form>
 
       <div id="fb-success-banner" class="alert-banner alert-info" style="display: none; margin-top: 1.25rem;">
         <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
         <div>
-          <strong>Terima Kasih!</strong> Umpan balik Anda telah berhasil disimpan secara lokal dan terkirim.
+          <strong>Terima Kasih!</strong> Umpan balik Anda telah terkirim ke <strong>ryan86877@gmail.com</strong>.
+        </div>
+      </div>
+      
+      <div id="fb-error-banner" class="alert-banner alert-danger" style="display: none; margin-top: 1.25rem;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
+        <div>
+          <strong>Informasi:</strong> Umpan balik telah disimpan secara lokal. Anda juga dapat mengirimkannya via tombol "Buka Email Client".
         </div>
       </div>
     </div>
@@ -75,11 +89,12 @@ function setRating(rating) {
   });
 }
 
-function handleFeedbackSubmit(event) {
+async function handleFeedbackSubmit(event) {
   event.preventDefault();
   const nama = document.getElementById("fb-nama").value;
   const email = document.getElementById("fb-email").value;
   const pesan = document.getElementById("fb-pesan").value;
+  const btn = document.getElementById("fb-submit-btn");
 
   const feedbackObj = {
     nama,
@@ -89,22 +104,73 @@ function handleFeedbackSubmit(event) {
     timestamp: new Date().toISOString()
   };
 
-  // Save to LocalStorage
+  // 1. Save to LocalStorage backup
   const existing = JSON.parse(localStorage.getItem("almirats_feedback") || "[]");
   existing.push(feedbackObj);
   localStorage.setItem("almirats_feedback", JSON.stringify(existing));
 
-  // Show Success Banner
-  const banner = document.getElementById("fb-success-banner");
-  if (banner) {
-    banner.style.display = "flex";
+  // 2. Disable button during submit
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Mengirim ke ryan86877@gmail.com...`;
   }
 
-  // Reset form
-  document.getElementById("feedbackForm").reset();
-  setRating(5);
+  // 3. Send email via FormSubmit API endpoint
+  try {
+    const response = await fetch("https://formsubmit.co/ajax/ryan86877@gmail.com", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        _subject: `[Umpan Balik Al-Mirats] Dari ${nama}`,
+        Nama: nama,
+        Email: email,
+        Rating: `${selectedRating} / 5 Bintang`,
+        Pesan: pesan,
+        Tanggal: new Date().toLocaleString("id-ID")
+      })
+    });
 
-  setTimeout(() => {
-    if (banner) banner.style.display = "none";
-  }, 5000);
+    const result = await response.json();
+
+    const banner = document.getElementById("fb-success-banner");
+    if (banner) {
+      banner.style.display = "flex";
+    }
+
+    document.getElementById("feedbackForm").reset();
+    setRating(5);
+
+    setTimeout(() => {
+      if (banner) banner.style.display = "none";
+    }, 6000);
+
+  } catch (err) {
+    console.error("Email submission error:", err);
+    const errBanner = document.getElementById("fb-error-banner");
+    if (errBanner) {
+      errBanner.style.display = "flex";
+      setTimeout(() => { errBanner.style.display = "none"; }, 6000);
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-paper-plane"></i> Kirim Umpan Balik ke Email`;
+    }
+  }
+}
+
+function sendViaMailto() {
+  const nama = document.getElementById("fb-nama").value || "Pengguna";
+  const email = document.getElementById("fb-email").value || "";
+  const pesan = document.getElementById("fb-pesan").value || "";
+
+  const subject = encodeURIComponent(`[Umpan Balik Al-Mirats Web] Dari ${nama}`);
+  const body = encodeURIComponent(
+    `Nama: ${nama}\nEmail Pengirim: ${email}\nRating: ${selectedRating}/5 Bintang\n\nPesan / Saran:\n${pesan}`
+  );
+
+  window.location.href = `mailto:ryan86877@gmail.com?subject=${subject}&body=${body}`;
 }
