@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * Web Kalkulator Al-Mirats - Feedback Form Module (Email Integration)
- * Directly submits feedback to ryan86877@gmail.com
+ * Directly submits feedback to ryan86877@gmail.com via FormSubmit & Mailto
  * ==========================================================================
  */
 
@@ -18,10 +18,16 @@ function initFeedbackForm() {
       </div>
       
       <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-        Kritik, saran, dan masukan Anda sangat berharga. Umpan balik akan dikirimkan langsung ke pengembang di <strong>ryan86877@gmail.com</strong>.
+        Kritik, saran, dan masukan Anda sangat berharga. Umpan balik akan dikirimkan langsung ke email pengembang di <strong>ryan86877@gmail.com</strong>.
       </p>
 
-      <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)">
+      <form id="feedbackForm" action="https://formsubmit.co/ryan86877@gmail.com" method="POST" onsubmit="saveFeedbackLocally()">
+        <!-- Hidden FormSubmit Configuration Fields -->
+        <input type="hidden" name="_subject" value="[Umpan Balik Al-Mirats Web]">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" id="fb-rating-hidden" name="Rating" value="5 / 5 Bintang">
+
         <div class="form-group">
           <label class="form-label">Rating Pengalaman Anda</label>
           <div id="rating-stars" style="display: flex; gap: 0.5rem; font-size: 1.75rem; color: #f59e0b; cursor: pointer; margin-bottom: 1rem;">
@@ -35,17 +41,17 @@ function initFeedbackForm() {
 
         <div class="form-group">
           <label class="form-label" for="fb-nama">Nama Lengkap</label>
-          <input type="text" id="fb-nama" class="form-control" style="padding-left: 1rem;" placeholder="Masukkan nama Anda" required>
+          <input type="text" id="fb-nama" name="Nama" class="form-control" style="padding-left: 1rem;" placeholder="Masukkan nama Anda" required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="fb-email">Alamat Email Anda</label>
-          <input type="email" id="fb-email" class="form-control" style="padding-left: 1rem;" placeholder="nama@email.com" required>
+          <input type="email" id="fb-email" name="Email" class="form-control" style="padding-left: 1rem;" placeholder="nama@email.com" required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="fb-pesan">Pesan / Saran</label>
-          <textarea id="fb-pesan" class="form-control" style="padding-left: 1rem; min-height: 120px; resize: vertical;" placeholder="Tuliskan umpan balik atau kendala yang Anda temui..." required></textarea>
+          <textarea id="fb-pesan" name="Pesan_Saran" class="form-control" style="padding-left: 1rem; min-height: 120px; resize: vertical;" placeholder="Tuliskan umpan balik atau kendala yang Anda temui..." required></textarea>
         </div>
 
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -58,20 +64,6 @@ function initFeedbackForm() {
           </button>
         </div>
       </form>
-
-      <div id="fb-success-banner" class="alert-banner alert-info" style="display: none; margin-top: 1.25rem;">
-        <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
-        <div>
-          <strong>Terima Kasih!</strong> Umpan balik Anda telah terkirim ke <strong>ryan86877@gmail.com</strong>.
-        </div>
-      </div>
-      
-      <div id="fb-error-banner" class="alert-banner alert-danger" style="display: none; margin-top: 1.25rem;">
-        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
-        <div>
-          <strong>Informasi:</strong> Umpan balik telah disimpan secara lokal. Anda juga dapat mengirimkannya via tombol "Buka Email Client".
-        </div>
-      </div>
     </div>
   `;
   setRating(5);
@@ -79,6 +71,11 @@ function initFeedbackForm() {
 
 function setRating(rating) {
   selectedRating = rating;
+  const ratingInput = document.getElementById("fb-rating-hidden");
+  if (ratingInput) {
+    ratingInput.value = `${rating} / 5 Bintang`;
+  }
+
   const stars = document.querySelectorAll("#rating-stars i");
   stars.forEach((star, idx) => {
     if (idx < rating) {
@@ -89,12 +86,10 @@ function setRating(rating) {
   });
 }
 
-async function handleFeedbackSubmit(event) {
-  event.preventDefault();
+function saveFeedbackLocally() {
   const nama = document.getElementById("fb-nama").value;
   const email = document.getElementById("fb-email").value;
   const pesan = document.getElementById("fb-pesan").value;
-  const btn = document.getElementById("fb-submit-btn");
 
   const feedbackObj = {
     nama,
@@ -104,62 +99,10 @@ async function handleFeedbackSubmit(event) {
     timestamp: new Date().toISOString()
   };
 
-  // 1. Save to LocalStorage backup
+  // Save to LocalStorage backup
   const existing = JSON.parse(localStorage.getItem("almirats_feedback") || "[]");
   existing.push(feedbackObj);
   localStorage.setItem("almirats_feedback", JSON.stringify(existing));
-
-  // 2. Disable button during submit
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Mengirim ke ryan86877@gmail.com...`;
-  }
-
-  // 3. Send email via FormSubmit API endpoint
-  try {
-    const response = await fetch("https://formsubmit.co/ajax/ryan86877@gmail.com", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        _subject: `[Umpan Balik Al-Mirats] Dari ${nama}`,
-        Nama: nama,
-        Email: email,
-        Rating: `${selectedRating} / 5 Bintang`,
-        Pesan: pesan,
-        Tanggal: new Date().toLocaleString("id-ID")
-      })
-    });
-
-    const result = await response.json();
-
-    const banner = document.getElementById("fb-success-banner");
-    if (banner) {
-      banner.style.display = "flex";
-    }
-
-    document.getElementById("feedbackForm").reset();
-    setRating(5);
-
-    setTimeout(() => {
-      if (banner) banner.style.display = "none";
-    }, 6000);
-
-  } catch (err) {
-    console.error("Email submission error:", err);
-    const errBanner = document.getElementById("fb-error-banner");
-    if (errBanner) {
-      errBanner.style.display = "flex";
-      setTimeout(() => { errBanner.style.display = "none"; }, 6000);
-    }
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fas fa-paper-plane"></i> Kirim Umpan Balik ke Email`;
-    }
-  }
 }
 
 function sendViaMailto() {
