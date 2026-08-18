@@ -54,14 +54,25 @@ function initFeedbackForm() {
           <textarea id="fb-pesan" name="Pesan_Saran" class="form-control" style="padding-left: 1rem; min-height: 120px; resize: vertical;" placeholder="Tuliskan umpan balik atau kendala yang Anda temui..." required></textarea>
         </div>
 
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
           <button type="submit" id="fb-submit-btn" class="btn btn-primary" style="flex: 1; min-width: 200px;">
-            <i class="fas fa-paper-plane"></i> Kirim Umpan Balik ke Email
+            <i class="fas fa-paper-plane"></i> Kirim Form (FormSubmit)
           </button>
           
           <button type="button" class="btn btn-secondary" onclick="sendViaMailto()">
-            <i class="fas fa-envelope"></i> Buka Email Client
+            <i class="fas fa-envelope"></i> Kirim Langsung (Buka Gmail)
           </button>
+        </div>
+
+        <div class="alert-banner alert-info" style="font-size: 0.85rem; font-weight: 500;">
+          <i class="fas fa-info-circle" style="font-size: 1.1rem; color: var(--primary);"></i>
+          <div>
+            <strong>Catatan Pengiriman:</strong>
+            <ul style="margin-left: 1.25rem; margin-top: 0.25rem; color: var(--text-main);">
+              <li><strong>Tombol Kirim Form (FormSubmit)</strong>: Pengiriman otomatis melalui layanan FormSubmit.co. Jika baru pertama kali, FormSubmit akan mengirim 1 email aktivasi dari <em>FormSubmit</em> ke <code>ryan86877@gmail.com</code> (cek inbox/spam/promosi) untuk konfirmasi 1 kali.</li>
+              <li><strong>Tombol Kirim Langsung (Buka Gmail)</strong>: Membuka aplikasi Gmail/Mail Anda dengan draft pesan yang sudah terisi lengkap, tinggal tekan Kirim 100% langsung sampai tanpa aktivasi.</li>
+            </ul>
+          </div>
         </div>
       </form>
     </div>
@@ -112,7 +123,7 @@ function sendViaMailto() {
 
   const subject = encodeURIComponent(`[Umpan Balik Al-Mirats Web] Dari ${nama}`);
   const body = encodeURIComponent(
-    `Nama: ${nama}\nEmail Pengirim: ${email}\nRating: ${selectedRating}/5 Bintang\n\nPesan / Saran:\n${pesan}`
+    `Nama Pengirim: ${nama}\nEmail Pengirim: ${email}\nRating: ${selectedRating}/5 Bintang\n\nPesan / Saran:\n${pesan}`
   );
 
   window.location.href = `mailto:ryan86877@gmail.com?subject=${subject}&body=${body}`;
